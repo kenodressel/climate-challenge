@@ -1,0 +1,12 @@
+∆T = λRF, with λ being a climate sensitivity parameter
+
+CO2 => 3.16 kg / kg fuel
+CO2 => 34.3 mW / m2 
+
+NOx => 15.14 g / kg fuel
+NOx => 17.5 mW / m2
+
+H2O => 1.231 kg / kg fuel
+H2O => 2.0 mW / m2
+
+CON => 57 mW / m2
