@@ -11,6 +11,9 @@ class ProblemSolution:
     def get_run_time(self) -> AnyStr:
         return self.cqm_sample_set.info['run_time']
 
+    def get_qpu_access_time(self) -> AnyStr:
+        return self.cqm_sample_set.info['qpu_access_time']
+
     def get_problem_id(self) -> AnyStr:
         return self.cqm_sample_set.info['problem_id']
 
@@ -33,6 +36,7 @@ class ProblemSolution:
     def print_lowest_energy_solution_with_info(self):
         print(f'Done! Sampler info is:\n'
               f'run_time -> {self.get_run_time()},\n'
+              f'qpu_access_time -> {self.get_qpu_access_time()},\n'
               f'problem_id -> {self.get_problem_id()},\n'
               f'problem_label -> {self.get_problem_label()}!'
               )
