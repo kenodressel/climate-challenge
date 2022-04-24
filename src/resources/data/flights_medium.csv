@@ -1,2 +1,5 @@
 flight_number,start_time,start_flightlevel,start_longitudinal,start_latitudinal,end_longitudinal,end_latitudinal
-0,2018-06-23 07:50:00,140,2,36,6,42
+0,2018-06-23 07:50:00,140,8,36,12,40
+1,2018-06-23 06:45:00,120,4,38,8,42
+2,2018-06-23 06:45:00,100,6,36,10,40
+3,2018-06-23 06:45:00,120,2,38,6,42

@@ -57,7 +57,7 @@ class ProblemPlotter:
                 latitudinal_points,
                 flight_level_points,
                 alpha=0.5,
-                label=f'Flight number: {flight_number}'
+                label=f'Flight number: {flight_number + 1}'
             )
 
         self.__fig.legend()
