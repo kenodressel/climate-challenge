@@ -1,6 +1,5 @@
-from typing import AnyStr, List, Tuple
-
 from dimod import SampleSet
+from typing import AnyStr, List, Tuple
 
 
 class ProblemSolution:
@@ -23,15 +22,15 @@ class ProblemSolution:
     def find_lowest_energy_solution(self) -> Tuple[List[AnyStr], int]:
         df = self.cqm_sample_set.to_pandas_dataframe(True)
 
-        feasible_solutions_df = df[df["is_feasible"]]
+        feasible_solutions_df = df[df["is_feasible"]]  # Only feasible solution satisfy all constraints
         if len(feasible_solutions_df["energy"]) == 0:
             print("No solution found!")
             return [], 0
 
-        lowest_energy_solution = feasible_solutions_df.iloc[[feasible_solutions_df["energy"].argmin()]]
-        lowest_energy_solution_flight_path = [key for key, value in lowest_energy_solution["sample"].values[0].items() if value == 1]
+        lowest_energy_solution = feasible_solutions_df.iloc[[feasible_solutions_df["energy"].argmin()]] # Find feasible solution with the lowest energy (climate cost)
+        lowest_energy_solution_flight_path = [key for key, value in lowest_energy_solution["sample"].values[0].items() if value == 1]  # Find flight path for feasible solution with lowest energy (climate cost). This returns only those binary variables equal to one (active flight edges between voxels)
 
-        return lowest_energy_solution_flight_path, lowest_energy_solution["energy"].values[0]
+        return lowest_energy_solution_flight_path, lowest_energy_solution["energy"].values[0]  # Return flight path and climate cost for feasible solution with lowest energy
 
     def print_lowest_energy_solution_with_info(self):
         print(f'Done! Sampler info is:\n'
