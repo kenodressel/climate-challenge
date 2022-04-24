@@ -1,13 +1,13 @@
 import random
 from datetime import datetime
+from typing import AnyStr, List, Literal
+from typing import Dict
 
 import numpy as np
 import pandas as pd
 from dimod import ConstrainedQuadraticModel, Binary, quicksum
 from dimod.sym import Sense
 from pandas import DataFrame
-from typing import AnyStr, List, Literal
-from typing import Dict
 
 from src.main.quantum.model.AirplaneDetails import AirplaneDetails
 from src.main.quantum.model.AirplaneSpeed import AirplaneSpeed
@@ -36,8 +36,8 @@ class ProblemDefinition:
     FUEL_CONSUMPTION_DESCENT_KEY = "fuel (descent) [kg/min]"
     FUEL_CONSUMPTION_CLIMB_KEY = "fuel (climb) [kg/min]"
 
-    MAX_VOXEL_HORIZONTAL_DISTANCE_IN_METER = 8e5
-    MAX_VOXEL_VERTICAL_DISTANCE_IN_METER = 8e2
+    MAX_VOXEL_HORIZONTAL_DISTANCE_IN_METER = 4e5
+    MAX_VOXEL_VERTICAL_DISTANCE_IN_METER = 4e2
 
     def __init__(self, problem_size: Literal['small', 'medium', 'big'] = 'small', random_cost: bool = False):
         self.__problem_size: Literal['small', 'medium', 'big'] = problem_size  # Define problem size (small: 6 x 6 x 1 for one flight; medium: 6 x 6 x 3 for two flights; big: full problem set)
@@ -131,16 +131,16 @@ class ProblemDefinition:
 
         cost_for_neighbouring_voxels = self.find_cost_for_neighbouring_voxels()  # Calculate cost for travel to neighbours for each voxel
 
+        cost_objectives = []
         for flight_number, flight_detail in self.flight_details_by_flight_number.items():  # Iterate over flights
             start_voxel_constraint = []
             destination_voxel_constraint = []
             selected_neighbours_constraint = {}
-            cost_objectives = []
 
             for voxel, cost_by_neighbour_voxels in cost_for_neighbouring_voxels.items():
                 selected_neighbours_constraint[voxel] = {}
                 for neighbour_voxel, cost in cost_by_neighbour_voxels.items():
-                    binary_variable = Binary(f'flight_between_voxels_{flight_number}_{voxel}_{neighbour_voxel}')  # Define a binary variable to represent travel between voxel and neighbour_voxel
+                    binary_variable = Binary(f'flight_{flight_number}_between_voxels_{voxel}_{neighbour_voxel}')  # Define a binary variable to represent travel between voxel and neighbour_voxel
 
                     if voxel == flight_detail.start_voxel.voxel.index:
                         start_voxel_constraint.append(binary_variable)  # Add binary variable to start_voxel_constraint, if voxel is also start_voxel of flight
@@ -155,18 +155,25 @@ class ProblemDefinition:
             cqm.add_constraint_from_model(quicksum(start_voxel_constraint), Sense.Eq, 1, label=f'flight {flight_number} start voxel constraint')  # Add constraint for start voxel of flight
             cqm.add_constraint_from_model(quicksum(destination_voxel_constraint), Sense.Eq, 1, label=f'flight {flight_number} destination voxel constraint')  # Add constraint for destination voxel of flight
 
-            for voxel, binary_variable_by_neighbour_voxel in selected_neighbours_constraint.items():
-                for neighbour_voxel, neighbour_binary_variable in binary_variable_by_neighbour_voxel.items():
-                    if neighbour_voxel == flight_detail.destination_voxel.voxel.index:
-                        continue
+            self.add_active_neighbour_constraints(flight_detail, flight_number, selected_neighbours_constraint, cqm)
 
-                    next_neighbour_binary_variables = [next_neighbour_bqm for next_neighbour, next_neighbour_bqm in selected_neighbours_constraint[neighbour_voxel].items() if next_neighbour != voxel]  # Find binary variables for neighbours of a neighbour
-
-                    cqm.add_constraint_from_model((1 - neighbour_binary_variable) + neighbour_binary_variable * quicksum(next_neighbour_binary_variables), Sense.Eq, 1, label=f'next_neighbour_{flight_number}_{voxel}_{neighbour_voxel}')  # Only one of the binary variables representing travelling from a neighbour to its corresponding neighbours is allowed to be active (if one travelling to the initial neighbour is active)
-
-            cqm.set_objective(quicksum(cost_objectives))  # Add cost objectives
+        cqm.set_objective(quicksum(cost_objectives))  # Add cost objectives
 
         return cqm
+
+    def add_active_neighbour_constraints(self, flight_detail, flight_number, selected_neighbours_constraint, cqm):
+        for voxel, binary_variable_by_neighbour_voxel in selected_neighbours_constraint.items():
+            for neighbour_voxel, neighbour_binary_variable in binary_variable_by_neighbour_voxel.items():
+                if neighbour_voxel == flight_detail.destination_voxel.voxel.index:
+                    continue
+
+                next_neighbour_binary_variables = [next_neighbour_bqm for next_neighbour, next_neighbour_bqm in
+                                                   selected_neighbours_constraint[neighbour_voxel].items() if
+                                                   next_neighbour != voxel]  # Find binary variables for neighbours of a neighbour
+
+                cqm.add_constraint_from_model((1 - neighbour_binary_variable) + neighbour_binary_variable * quicksum(
+                    next_neighbour_binary_variables), Sense.Eq, 1,
+                                              label=f'next_neighbour_{flight_number}_{voxel}_{neighbour_voxel}')  # Only one of the binary variables representing travelling from a neighbour to its corresponding neighbours is allowed to be active (if one travelling to the initial neighbour is active)
 
     def find_cost_for_neighbouring_voxels(self) -> Dict:
         cost_between_neighbouring_voxels = {}
@@ -264,7 +271,7 @@ class ProblemDefinition:
 
 
 if __name__ == "__main__":
-    problem_definition = ProblemDefinition(problem_size="small", random_cost=False)
+    problem_definition = ProblemDefinition(problem_size="medium", random_cost=False)
 
     problem_definition.print_flight_details()
 

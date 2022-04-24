@@ -2,6 +2,7 @@ from dimod import SampleSet
 from dwave.system import LeapHybridCQMSampler
 
 from src.main.quantum.ProblemDefinition import ProblemDefinition
+from src.main.quantum.ProblemPlotter import ProblemPlotter
 from src.main.quantum.ProblemSolution import ProblemSolution
 
 
@@ -29,3 +30,6 @@ if __name__ == "__main__":
 
     problem_solution.print_lowest_energy_solution_with_info()
     problem_definition.print_flight_details()
+
+    problem_plotter = ProblemPlotter(problem_definition.voxels)
+    problem_plotter.plot(problem_solution.find_flight_paths(problem_definition.voxels))
