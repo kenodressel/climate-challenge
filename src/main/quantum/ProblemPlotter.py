@@ -1,5 +1,5 @@
 import random
-from typing import List, Dict
+from typing import List, Dict, Literal
 
 from matplotlib import pyplot as plt
 
@@ -7,6 +7,8 @@ from src.main.quantum.model.Voxel import Voxel
 
 
 class ProblemPlotter:
+    __PATH_TO_FLIGHT_PATHS_FIGURES = '../../resources/quantum'
+
     def __init__(self, grid: List[Voxel]):
 
         self.__fig = plt.figure(dpi=600)
@@ -45,7 +47,7 @@ class ProblemPlotter:
     def __find_flight_level_values(self, voxels: List[Voxel]):
         return [voxel.flight_level for voxel in voxels]
 
-    def plot(self, flight_paths: Dict[int, List[Voxel]]):
+    def plot(self, flight_paths: Dict[int, List[Voxel]], problem_size: Literal['small', 'medium', 'big', 'dummy']) -> None:
 
         for flight_number, flight_path in flight_paths.items():
             longitudinal_points = self.__find_longitudinal_values(flight_path)
@@ -61,7 +63,7 @@ class ProblemPlotter:
             )
 
         self.__fig.legend()
-        plt.show()
+        plt.savefig(self.__PATH_TO_FLIGHT_PATHS_FIGURES + '/flight_paths' + '_' + problem_size + '.png')
 
 if __name__ == '__main__':
     grid = [
@@ -131,4 +133,4 @@ if __name__ == '__main__':
 
     problem_plotter = ProblemPlotter(grid)
 
-    problem_plotter.plot(flight_paths)
+    problem_plotter.plot(flight_paths, "dummy")

@@ -1,3 +1,5 @@
+from typing import Literal
+
 from dimod import SampleSet
 from dwave.system import LeapHybridCQMSampler
 
@@ -20,8 +22,9 @@ class ProblemSolver:
 
 
 if __name__ == "__main__":
+    problem_size: Literal['small', 'medium', 'big'] = "small"
     print("Start solving problem!")
-    problem_definition = ProblemDefinition("medium")
+    problem_definition = ProblemDefinition(problem_size)
 
     print("Problem definition done! Continuing to solve problem.")
     problem_solver = ProblemSolver()
@@ -32,4 +35,4 @@ if __name__ == "__main__":
     problem_definition.print_flight_details()
 
     problem_plotter = ProblemPlotter(problem_definition.voxels)
-    problem_plotter.plot(problem_solution.find_flight_paths(problem_definition.voxels))
+    problem_plotter.plot(problem_solution.find_flight_paths(problem_definition.voxels), problem_size)
